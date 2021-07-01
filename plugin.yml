@@ -1,0 +1,14 @@
+name: BakusRank
+version: 1.1.0
+author: benjimania74
+main: fr.benjimania74.bakusrank.Main
+api-version: 1.16
+description: Plugin de Rank assez performement et (plutôt) bien sécurisé!
+
+commands:
+  perm:
+    description: Permet de voir ses perms
+    permission: BakusRank.seePerms
+  rank:
+    description: Commande de base du BakusRank
+    permission: BakusRank.*
