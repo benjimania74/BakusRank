@@ -28,7 +28,7 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
-        setupPandF(1);
+        loop();
         tabTeam();
 
         File pRank = new File("plugins/BakusRank", "playerRank.yml");
@@ -53,11 +53,27 @@ public class Main extends JavaPlugin {
         System.out.println("BakusRank: On");
     }
 
-    public void setupPandF(final int i){
+    public void loop(){
         new BukkitRunnable(){
             @Override
             public void run() {
-                reloadConfig();
+                ScoreboardManager sm = Bukkit.getScoreboardManager();
+                for(String key : getConfig().getConfigurationSection("Groups").getKeys(false)){
+                    String name = getConfig().getInt("Groups." + key + ".tabPriority") + "";
+                    boolean unique = true;
+                    for(Team t : sm.getMainScoreboard().getTeams()){
+                        if(t.getName().equals(name)){
+                            unique = false;
+                        }
+                    }
+                    if(unique) {
+                        Team team = sm.getMainScoreboard().registerNewTeam(name);
+                        if (!teamList.contains(sm.getMainScoreboard().getTeam(getConfig().getInt("Groups." + key + ".tabPriority") + ""))) {
+                            teamList.add(team);
+                        }
+                    }
+                }
+
                 for(Player player : Bukkit.getOnlinePlayers()){
                     String pluginPath = "plugins/BakusRank";
                     File pRank = new File(pluginPath, "playerRank.yml");
@@ -88,34 +104,9 @@ public class Main extends JavaPlugin {
                         perm.addDefaultPerm(player, rank);
                     }
                 }
-                setupPandF(1);
+                loop();
             }
         }.runTaskLater(this,  5L);
-    }
-
-    public void tabTeam(){
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                ScoreboardManager sm = Bukkit.getScoreboardManager();
-                for(String key : getConfig().getConfigurationSection("Groups").getKeys(false)){
-                    String name = getConfig().getInt("Groups." + key + ".tabPriority") + "";
-                    boolean unique = true;
-                    for(Team t : sm.getMainScoreboard().getTeams()){
-                        if(t.getName().equals(name)){
-                            unique = false;
-                        }
-                    }
-                    if(unique) {
-                        Team team = sm.getMainScoreboard().registerNewTeam(name);
-                        if (!teamList.contains(sm.getMainScoreboard().getTeam(getConfig().getInt("Groups." + key + ".tabPriority") + ""))) {
-                            teamList.add(team);
-                        }
-                    }
-                }
-                tabTeam();
-            }
-        }.runTaskLater(this, 5L);
     }
 
     public static Main getInstance() {
