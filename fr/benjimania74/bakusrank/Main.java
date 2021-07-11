@@ -29,7 +29,6 @@ public class Main extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
         loop();
-        tabTeam();
 
         File pRank = new File("plugins/BakusRank", "playerRank.yml");
         if(!pRank.exists()) {
