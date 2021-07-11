@@ -11,13 +11,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Team;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Main extends JavaPlugin {
-
+    public static List<Team> teamList = new ArrayList<>();
     private static Main instance;
 
     @Override
@@ -25,6 +29,7 @@ public class Main extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
         setupPandF(1);
+        tabTeam();
 
         File pRank = new File("plugins/BakusRank", "playerRank.yml");
         if(!pRank.exists()) {
@@ -52,44 +57,66 @@ public class Main extends JavaPlugin {
         new BukkitRunnable(){
             @Override
             public void run() {
-                int time = i;
-                if (time != 0) {
-                    time--;
-                    setupPandF(time);
-                    if (time == 0) {
-                        time--;
-                    }
-                }
-                if (time == 0){
-                    for(Player player : Bukkit.getOnlinePlayers()){
-                        Perm perm = new Perm();
-                        String pluginPath = "plugins/BakusRank";
-                        File pRank = new File(pluginPath, "playerRank.yml");
-                        FileConfiguration playerRank = YamlConfiguration.loadConfiguration(pRank);
+                reloadConfig();
+                for(Player player : Bukkit.getOnlinePlayers()){
+                    String pluginPath = "plugins/BakusRank";
+                    File pRank = new File(pluginPath, "playerRank.yml");
+                    FileConfiguration playerRank = YamlConfiguration.loadConfiguration(pRank);
 
-                        reloadConfig();
-                        String rank = playerRank.getString(player.getDisplayName());
-
-                        if(getConfig().getBoolean("suffixInList")) {
-                            String prefix = Objects.requireNonNull(getConfig().getString("Groups." + rank + ".prefix")).replace("&", "§");
-                            String suffix = Objects.requireNonNull(getConfig().getString("Groups." + rank + ".suffix")).replace("&", "§");
-                            player.setPlayerListName(prefix + " " + player.getDisplayName() + " " + suffix);
-                            player.setCustomName(prefix + " " + player.getDisplayName() + " " + suffix);
-                            player.setCustomNameVisible(true);
-                            perm.addDefaultPerm(player, rank);
-                        }else {
-                            String prefix = Objects.requireNonNull(getConfig().getString("Groups." + rank + ".prefix")).replace("&", "§");
-                            player.setPlayerListName(prefix + " " + player.getDisplayName());
-                            player.setCustomName(prefix + " " + player.getDisplayName());
-                            player.setCustomNameVisible(true);
-                            perm.addDefaultPerm(player, rank);
+                    for(Team t : teamList){
+                        if(t.getName().equals(getConfig().getInt("Groups." + playerRank.getString(player.getName()) + ".tabPriority") + "")){
+                            t.addEntry(player.getName());
                         }
                     }
-                    setupPandF(1);
+
+                    Perm perm = new Perm();
+
+                    String rank = playerRank.getString(player.getName());
+
+                    if(getConfig().getBoolean("suffixInList")) {
+                        String prefix = Objects.requireNonNull(getConfig().getString("Groups." + rank + ".prefix")).replace("&", "§");
+                        String suffix = Objects.requireNonNull(getConfig().getString("Groups." + rank + ".suffix")).replace("&", "§");
+                        player.setPlayerListName(prefix + " " + player.getDisplayName() + " " + suffix);
+                        player.setCustomName(prefix + " " + player.getDisplayName() + " " + suffix);
+                        player.setCustomNameVisible(true);
+                        perm.addDefaultPerm(player, rank);
+                    }else {
+                        String prefix = Objects.requireNonNull(getConfig().getString("Groups." + rank + ".prefix")).replace("&", "§");
+                        player.setPlayerListName(prefix + " " + player.getDisplayName());
+                        player.setCustomName(prefix + " " + player.getDisplayName());
+                        player.setCustomNameVisible(true);
+                        perm.addDefaultPerm(player, rank);
+                    }
                 }
+                setupPandF(1);
             }
-        }.runTaskLater(this, 20L);
-    };
+        }.runTaskLater(this,  5L);
+    }
+
+    public void tabTeam(){
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                ScoreboardManager sm = Bukkit.getScoreboardManager();
+                for(String key : getConfig().getConfigurationSection("Groups").getKeys(false)){
+                    String name = getConfig().getInt("Groups." + key + ".tabPriority") + "";
+                    boolean unique = true;
+                    for(Team t : sm.getMainScoreboard().getTeams()){
+                        if(t.getName().equals(name)){
+                            unique = false;
+                        }
+                    }
+                    if(unique) {
+                        Team team = sm.getMainScoreboard().registerNewTeam(name);
+                        if (!teamList.contains(sm.getMainScoreboard().getTeam(getConfig().getInt("Groups." + key + ".tabPriority") + ""))) {
+                            teamList.add(team);
+                        }
+                    }
+                }
+                tabTeam();
+            }
+        }.runTaskLater(this, 5L);
+    }
 
     public static Main getInstance() {
         return instance;

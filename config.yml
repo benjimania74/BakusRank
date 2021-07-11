@@ -1,15 +1,19 @@
 suffixInList: false
-chatseparator: "&8>>"
+chatseparator: "&8>> "
 Groups:
-  Admin:
-    prefix: "&b[&4Administrateur&b] "
+  ADMIN:
+    prefix: "&b[&4Administrateur&b]"
     suffix: ""
     color: "&b"
+    tabPriority: 1
+    name: "Administrateur"
     permissions:
       - minecraft.command.op
-  Default:
-    prefix: "&b[&eBakuscien&b]&e "
+  DEFAULT:
+    prefix: "&b[&eJoueur&b]&e"
     suffix: ""
     color: "&e"
+    tabPriority: 11
+    name: "Joueur"
     permissions:
       - none

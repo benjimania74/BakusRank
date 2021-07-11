@@ -20,8 +20,8 @@ public class onJoin implements Listener {
 
         Player player = e.getPlayer();
 
-        if(!playerRank.isSet(player.getDisplayName())){
-            playerRank.set(player.getDisplayName(), "Default");
+        if(!playerRank.isSet(player.getName())){
+            playerRank.set(player.getName(), "DEFAULT");
             try {
                 playerRank.save(pRank);
             } catch (IOException IOe) {

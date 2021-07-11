@@ -11,8 +11,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class RankCommands implements CommandExecutor, TabCompleter {
@@ -27,8 +27,8 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                 switch (arg[0]) {
                     case "viewgperms":
                         if(arg.length == 2){
-                            if(config.isSet("Groups." + arg[1])){
-                                String perms = Objects.requireNonNull(config.get("Groups." + arg[1] + ".permissions")).toString().replace("-", ",");
+                            if(config.isSet("Groups." + arg[1].toUpperCase())){
+                                String perms = Objects.requireNonNull(config.get("Groups." + arg[1].toUpperCase() + ".permissions")).toString().replace("-", ",");
                                 sender.sendMessage("§aPermission(s) du groupe §e" + arg[1] + "§a: §e" + perms);
                             }else{
                                 sender.sendMessage("§cLe groupe §e" + arg[1] + " §cn'existe pas");
@@ -39,13 +39,13 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "addgperm":
                         if(arg.length == 3){
-                            if(config.isSet("Groups." + arg[1])){
-                                List<String> perms = (List<String>) config.getList("Groups." + arg[1] + ".permissions");
+                            if(config.isSet("Groups." + arg[1].toLowerCase())){
+                                List<String> perms = (List<String>) config.getList("Groups." + arg[1].toUpperCase() + ".permissions");
                                 assert perms != null;
-                                perms.add(arg[2]);
+                                perms.add(arg[2].toLowerCase());
 
                                 try {
-                                    config.set("Groups."+arg[1]+".permissions", perms);
+                                    config.set("Groups."+arg[1].toUpperCase()+".permissions", perms);
                                     config.save("plugins/BakusRank/config.yml");
                                     sender.sendMessage("§aLa permission §e" + arg[2] + " §aa été ajoutée au groupe §e" + arg[1]);
                                 } catch (IOException e) {
@@ -60,13 +60,13 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "delgperm":
                         if(arg.length == 3){
-                            if(config.isSet("Groups." + arg[1])){
-                                List<String> perms = (List<String>) config.getList("Groups." + arg[1] + ".permissions");
+                            if(config.isSet("Groups." + arg[1].toUpperCase())){
+                                List<String> perms = (List<String>) config.getList("Groups." + arg[1].toUpperCase() + ".permissions");
                                 assert perms != null;
-                                if(perms.contains(arg[2])){
-                                    perms.remove(arg[2]);
+                                if(perms.contains(arg[2].toLowerCase())){
+                                    perms.remove(arg[2].toLowerCase());
                                     try {
-                                        config.set("Groups."+arg[1]+".permissions", perms);
+                                        config.set("Groups."+arg[1].toUpperCase()+".permissions", perms);
                                         config.save("plugins/BakusRank/config.yml");
                                         sender.sendMessage("§aLa permission §e" + arg[2] + " §aa été supprimée au groupe §e" + arg[1]);
                                     } catch (IOException e) {
@@ -84,13 +84,12 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "setgcolor":
                         if(arg.length == 3){
-                            if(config.isSet("Groups."+arg[1])){
-                                if(arg[2].startsWith("&")){
-                                    config.set("Groups."+arg[2]+".color", arg[2]);
-                                    sender.sendMessage("§aLe prefix du groupe §e" + arg[1] + " §aest maintenant §e" + arg[2] + " §a(" + arg[2].replace("&", "§") + "couleur§a)");
+                            if(config.isSet("Groups."+arg[1].toUpperCase())){
+                                if(arg[2].startsWith("&") && arg[2].length() == 2){
+                                    config.set("Groups."+arg[1].toUpperCase()+".color", arg[2]);
+                                    sender.sendMessage("§aLa couleur du groupe §e" + arg[1] + " §aest maintenant §e" + arg[2] + " §a(" + arg[2].replace("&", "§") + "couleur§a)");
                                 }else{
-                                    config.set("Groups."+arg[2]+".color", "&" + arg[2]);
-                                    sender.sendMessage("§aLe prefix du groupe §e" + arg[1] + " §aest maintenant §e" + arg[2] + " §a(§" + arg[2] + "couleur§a)");
+                                    sender.sendMessage("§cPour définir une nouvelle couleur à un groupe il faut écrire \"&\" suivie du code de la couleur (1 caractère)");
                                 }
 
                                 try {
@@ -108,9 +107,9 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                     case "addp":
                         if(arg.length >= 2) {
                             if(arg.length == 3) {
-                                if (config.isSet("Groups." + arg[2])) {
+                                if (config.isSet("Groups." + arg[2].toUpperCase())) {
                                     sender.sendMessage("§aLe joueur §e" + arg[1] + " §aest entré dans le groupe §e" + arg[2] + "§a!");
-                                    playerRank.set(arg[1], arg[2]);
+                                    playerRank.set(arg[1], arg[2].toUpperCase());
                                     try {
                                         playerRank.save(pRank);
                                     } catch (IOException IOe) {
@@ -129,7 +128,7 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                     case "getpgroup":
                         if(arg.length == 2){
                             if(playerRank.isSet(arg[1])){
-                                sender.sendMessage("§e" + arg[1] + " §aest dans le groupe: §e" + playerRank.getString(arg[1]));
+                                sender.sendMessage("§e" + arg[1] + " §aest dans le groupe: §e" + playerRank.getString(arg[1]).toLowerCase());
                             }else{
                                 sender.sendMessage("§cLe joueur entré ne s'est jamais connecté au serveur.");
                             }
@@ -139,13 +138,13 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "createg":
                         if(arg.length == 2){
-                            if(!config.isSet("Groups." + arg[1])){
+                            if(!config.isSet("Groups." + arg[1].toUpperCase())){
                                 List<String> perm = new ArrayList();
                                 perm.add("none");
-                                config.set("Groups." + arg[1] + ".prefix", arg[1] + " ");
-                                config.set("Groups." + arg[1] + ".suffix", "");
-                                config.set("Groups." + arg[1] + ".color", "&f");
-                                config.set("Groups." + arg[1] + ".permissions", perm);
+                                config.set("Groups." + arg[1].toUpperCase() + ".prefix", arg[1]);
+                                config.set("Groups." + arg[1].toUpperCase() + ".suffix", "");
+                                config.set("Groups." + arg[1].toUpperCase() + ".color", "&f");
+                                config.set("Groups." + arg[1].toUpperCase() + ".permissions", perm);
                                 try {
                                     config.save("plugins/BakusRank/config.yml");
                                 } catch (IOException e) {
@@ -161,9 +160,9 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "deleteg":
                         if(arg.length == 2){
-                            if(config.isSet("Groups." + arg[1])) {
-                                if(!arg[1].equals("Default")){
-                                    config.set("Groups." + arg[1], null);
+                            if(config.isSet("Groups." + arg[1].toUpperCase())) {
+                                if(!arg[1].equalsIgnoreCase("default")){
+                                    config.set("Groups." + arg[1].toUpperCase(), null);
                                     try {
                                         config.save("plugins/BakusRank/config.yml");
                                     } catch (IOException e) {
@@ -171,8 +170,13 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                                     }
                                     sender.sendMessage("§aLe groupe §e" + arg[1] + " §aa été supprimé avec succès");
                                     for(String po : playerRank.getStringList("player")){
-                                        if(Objects.equals(playerRank.getString("player." + po), arg[1])){
-                                            playerRank.set("player" + po, "Default");
+                                        if(playerRank.getString(po).equalsIgnoreCase(arg[1].toUpperCase())){
+                                            playerRank.set(po, "DEFAULT");
+                                            try {
+                                                playerRank.save(pRank);
+                                            }catch (Exception e){
+                                                e.printStackTrace();
+                                            }
                                         }
                                     }
                                 }else{
@@ -187,11 +191,11 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "setgprefix":
                         if(arg.length == 3){
-                            if(config.isSet("Groups." + arg[1])){
+                            if(config.isSet("Groups." + arg[1].toUpperCase())){
                                 if(!arg[2].equals("empty")){
-                                    config.set("Groups." + arg[1] + ".prefix", arg[2]);
+                                    config.set("Groups." + arg[1].toUpperCase() + ".prefix", arg[2]);
                                 }else{
-                                    config.set("Groups." + arg[1] + ".prefix", "");
+                                    config.set("Groups." + arg[1].toUpperCase() + ".prefix", "");
                                 }
 
                                 try {
@@ -208,11 +212,11 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "setgsuffix":
                         if(arg.length == 3){
-                            if(config.isSet("Groups." + arg[1])){
+                            if(config.isSet("Groups." + arg[1].toUpperCase())){
                                 if(!arg[2].equals("empty")){
-                                    config.set("Groups." + arg[1] + ".suffix", arg[2]);
+                                    config.set("Groups." + arg[1].toUpperCase() + ".suffix", arg[2]);
                                 }else {
-                                    config.set("Groups." + arg[1] + ".suffix", "");
+                                    config.set("Groups." + arg[1].toUpperCase() + ".suffix", "");
                                 }
 
                                 try {
@@ -229,7 +233,7 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "getprefix":
                         if(arg.length == 2){
-                            if(config.isSet("Groups." + arg[1])){
+                            if(config.isSet("Groups." + arg[1].toUpperCase())){
                                 sender.sendMessage("§aLe prefix du groupe §e" + arg[1] + " §aest§e: " + Main.getInstance().getConfig().getString("Groups." + arg[1] + ".prefix"));
                             }else {
                                 sender.sendMessage("§cLe groupe entré n'existe pas");
@@ -240,7 +244,7 @@ public class RankCommands implements CommandExecutor, TabCompleter {
                         break;
                     case "getsuffix":
                         if(arg.length == 2){
-                            if(config.isSet("Groups." + arg[1])){
+                            if(config.isSet("Groups." + arg[1].toUpperCase())){
                                 sender.sendMessage("§aLe suffix du groupe §e" + arg[1] + " §aest§e: " + Main.getInstance().getConfig().getString("Groups." + arg[1] + ".suffix"));
                             }else {
                                 sender.sendMessage("§cLe groupe entré n'existe pas");
@@ -294,6 +298,7 @@ public class RankCommands implements CommandExecutor, TabCompleter {
             arguments.add("setgcolor");
             arguments.add("addgperm");
             arguments.add("viewgperms");
+            arguments.add("delgperm");
         }
 
         List<String> resultat = new ArrayList<>();

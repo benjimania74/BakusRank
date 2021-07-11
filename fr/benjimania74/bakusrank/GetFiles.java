@@ -2,7 +2,6 @@ package fr.benjimania74.bakusrank;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import java.io.File;
 
@@ -14,27 +13,22 @@ public class GetFiles {
     private final FileConfiguration config = YamlConfiguration.loadConfiguration(conf);
 
     public String getRank(String username){
-        String rank = playerRank.getString(username);
-        return rank;
+        return playerRank.getString(username);
     }
 
     public String getPrefix(String username){
-        String prefix = config.getString("Groups." + getRank(username) + ".prefix").replace("&", "§");
-        return prefix;
+        return config.getString("Groups." + getRank(username) + ".prefix").replace("&", "§");
     }
 
     public String getSuffix(String username){
-        String suffix = config.getString("Groups." + getRank(username) + ".suffix").replace("&", "§");
-        return suffix;
+        return config.getString("Groups." + getRank(username) + ".suffix").replace("&", "§");
     }
 
     public String getColor(String username){
-        String color = config.getString("Groups." + getRank(username) + ".color").replace("&", "§");
-        return color;
+        return config.getString("Groups." + getRank(username) + ".color").replace("&", "§");
     }
 
     public String getChatSeparator(){
-        String chatSepa = config.getString("chatseparator").replace("&", "§");
-        return chatSepa;
+        return config.getString("chatseparator").replace("&", "§");
     }
 }
